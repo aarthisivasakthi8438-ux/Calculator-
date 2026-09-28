@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modern Calendar & Calculator</title>
+  <!--correct way to link external css-->
+  <link rel="stylesheet" href="style.css">
+   <script src="action.js" defer></script>
+</head>
+
+<body>
+
+  <!-- Global Switch Button at Bottom Right -->
+  <button class="global-switch-btn" id="globalSwitchBtn">Switch to Calculator</button>
+
+  <div class="app-container">
+    <!-- Calendar Component -->
+    <div class="calendar active" id="calendarBox">
+      <div class="top">
+        <div>
+          <div class="title">My Calendar</div>
+          <h1 id="monthYear">August 2026</h1>
+        </div>
+        <div class="navigation">
+          <button class="nav-btn" id="prev">&#10094;</button>
+          <button class="nav-btn" id="next">&#10095;</button>
+        </div>
+      </div>
+    
+      <input
+        type="text" 
+        id="calendarSearch"
+        class="calendar-search"
+        placeholder="Search exact date...Ex:30/10/2007">
+      <div class="weekdays">
+        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+      </div>
+
+      <div class="days" id="days"></div>
+
+      <div class="footer">
+        <div id="selectedDate">Select a date</div>
+        <button class="today-btn" id="todayBtn">Today</button>
+      </div>
+    </div>
+
+    <!-- Calculator Component -->
+    <div class="calculator minified" id="calculatorBox">
+      <div class="top">
+        <div>
+          <div class="title">My Calculator</div>
+          <h1 style="font-size: 22px;">Calculator</h1>
+        </div>
+      </div>
+      <div class="calc-screen" id="calcScreen">0</div>
+      <div class="calc-buttons">
+        <button class="calc-btn" onclick="clearCalc()">C</button>
+        <button class="calc-btn" onclick="deleteCalc()">DEL</button>
+        <button class="calc-btn" onclick="appendCalc('/')">/</button>
+        <button class="calc-btn" onclick="appendCalc('*')">*</button>
+        <button class="calc-btn" onclick="appendCalc('7')">7</button>
+        <button class="calc-btn" onclick="appendCalc('8')">8</button>
+        <button class="calc-btn" onclick="appendCalc('9')">9</button>
+        <button class="calc-btn operator" onclick="appendCalc('-')">-</button>
+        <button class="calc-btn" onclick="appendCalc('4')">4</button>
+        <button class="calc-btn" onclick="appendCalc('5')">5</button>
+        <button class="calc-btn" onclick="appendCalc('6')">6</button>
+        <button class="calc-btn operator" onclick="appendCalc('+')">+</button>
+        <button class="calc-btn" onclick="appendCalc('1')">1</button>
+        <button class="calc-btn" onclick="appendCalc('2')">2</button>
+        <button class="calc-btn" onclick="appendCalc('3')">3</button>
+        <button class="calc-btn" onclick="appendCalc('0')">0</button>
+        <button class="calc-btn" onclick="appendCalc('.')">.</button>
+        <button class="calc-btn equal" onclick="calculateResult()">=</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+  
