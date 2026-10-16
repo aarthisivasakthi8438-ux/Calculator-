@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modern Calendar & Calculator</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap');
+
+    * {
+      margin: 0px;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Roboto", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background:
+        radial-gradient(circle at 10% 20%, #0de96555, transparent 30%),
+        radial-gradient(circle at 90% 80%, #0ec9e255, transparent 30%),
+        #090b1a;
+      overflow: hidden;
+      color: white;
+      position: relative;
+    }
+
+    /* Background decorations */
+    body::before,
+    body::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(2px);
+      animation: float 6s ease-in-out infinite;
+    }
+
+    body::before {
+      width: 180px;
+      height: 180px;
+      background: #18dd6a;
+      top: 8%;
+      left: 15%;
+      opacity: 0.3;
+    }
+
+    body::after {
+      width: 220px;
+      height: 220px;
+      background: #125ee2;
+      bottom: 5%;
+      right: 12%;
+      opacity: 0.25;
+      animation-delay: 2s;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-25px);
+      }
+    }
+
+    /* Main Container layout */
+    .app-container {
+      position: relative;
+      width: 420px;
+      height: 560px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2;
+    }
+
+    /* Calendar & Calculator Shared Box Styles */
+    .calendar, .calculator {
+      position: absolute;
+      width: 420px;
+      padding: 28px;
+      border: 1px solid rgba(30, 4, 4, 0.15);
+      border-radius: 28px;
+      background: rgba(20, 2, 2, 0.35);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      box-shadow:
+        0 30px 80px rgba(0,0,0,0.5),
+        inset 0 1px 1px rgba(255,255,255,0.15);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Active (Main Center) State */
+    .calendar.active, .calculator.active {
+      transform: scale(1);
+      z-index: 3;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Hidden/Inactive State */
+    .calendar.minified, .calculator.minified {
+      transform: scale(0) !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+
+    /* Global Fixed Floating Switch Button */
+    .global-switch-btn {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      z-index: 1000;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #58de51, #0072ff);
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      transition: 0.3s;
+    }
+
+    .global-switch-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 12px 35px rgba(0,114,255,0.5);
+    }
+
+    /* Top section */
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .title {
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #aaa;
+      margin-bottom: 4px;
+    }
+
+    #monthYear {
+      font-size: 27px;
+      font-weight: 600;
+    }
+    .navigation {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-btn {
+      width: 40px;
+      height: 40px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .nav-btn:hover {
+      background: linear-gradient(135deg, #16e00387, #05f2e2);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px #1fe51544;
+    }
+    
+    /* Search */
+    .calendar-search {
+      width: 100%;
+      padding: 11px 15px;
+      margin-bottom: 20px;
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .calendar-search::placeholder {
+      color: #aaa;
+    }
+
+    .calendar-search:focus {
+      border-color: #05f2e2;
+      box-shadow: 0 0 12px rgba(5, 242, 226, 0.25);
+    }
+
+    /* Weekdays */
+    .weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      margin-bottom: 10px;
+    }
+
+    .weekdays div {
+      text-align: center;
+      font-size: 12px;
+      color: #888;
+      font-weight: 500;
+    }
+
+    /* Days */
+    .days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 7px;
+    }
+
+    .day {
+      position: relative;
+      height: 45px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 14px;
+      color: #e0dede;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .day:hover {
+      color: white;
+      background: rgba(255,255,255,0.12);
+      transform: scale(1.08);
+    }
+
+    .empty {
+      cursor: default;
+    }
+
+    .empty:hover {
+      background: transparent;
+      transform: none;
+    }
+
+    /* Today */
+    .today {
+      background: linear-gradient(135deg, #3cff49, #02a1e6);
+      color: white !important;
+      font-weight: 700;
+      box-shadow: 0 0 20px rgba(255,60,172,0.5), 0 8px 20px rgba(0,0,0,0.25);
+    }
+
+    .today::after {
+      content: "";
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #fff;
+      bottom: 6px;
+    }
+
+    /* Selected day */
+    .selected {
+      border: 2px solid #ca16f2;
+      color: #9a7dbc !important;
+      box-shadow: 0 0 15px rgba(0,229,255,0.3);
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 25px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #selectedDate {
+      color: #aaa;
+      font-size: 13px;
+    }
+
+    .today-btn {
+      border: none;
+      padding: 9px 15px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #58de51, #0072ff);
+      color: white;
+      font-size: 12px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .today-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 20px #e3e8eaea;
+    }
+
+    /* --- Calculator Styles --- */
+    .calc-screen {
+      width: 100%;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0 15px;
+      font-size: 24px;
+      color: white;
+      overflow: hidden;
+    }
+
+    .calc-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .calc-btn {
+      height: 45px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+      size-adjust: calculator();
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .calc-btn:hover {
+      background: linear-gradient(135deg, #16e00387, #05f2e2);
+      transform: translateY(-2px);
+    }
+
+    .calc-btn.operator {
+      background: rgba(0, 114, 255, 0.3);
+    }
+
+    .calc-btn.equal {
+      background: linear-gradient(135deg, #3cff49, #02a1e6);
+      grid-column: span 2;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .app-container, .calendar, .calculator {
+        width: 92%;
+        padding: 22px;
+      }
+      #monthYear {
+        font-size: 22px;
+      }
+      .day {
+        height: 40px;
+        border-radius: 11px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Global Switch Button at Bottom Right -->
+  <button class="global-switch-btn" id="globalSwitchBtn">Switch to Calculator</button>
+
+  <div class="app-container">
+    <!-- Calendar Component -->
+    <div class="calendar active" id="calendarBox">
+      <div class="top">
+        <div>
+          <div class="title">My Calendar</div>
+          <h1 id="monthYear">August 2026</h1>
+        </div>
+        <div class="navigation">
+          <button class="nav-btn" id="prev">&#10094;</button>
+          <button class="nav-btn" id="next">&#10095;</button>
+        </div>
+      </div>
+    
+      <input
+        type="text" 
+        id="calendarSearch"
+        class="calendar-search"
+        placeholder="Search exact date...Ex:30/10/2007"
+      >
+      <div class="weekdays">
+        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+      </div>
+
+      <div class="days" id="days"></div>
+
+      <div class="footer">
+        <div id="selectedDate">Select a date</div>
+        <button class="today-btn" id="todayBtn">Today</button>
+      </div>
+    </div>
+
+    <!-- Calculator Component -->
+    <div class="calculator minified" id="calculatorBox">
+      <div class="top">
+        <div>
+          <div class="title">Utility</div>
+          <h1 style="font-size: 22px;">Calculator</h1>
+        </div>
+      </div>
+
+      <div class="calc-screen" id="calcScreen">0</div>
+
+      <div class="calc-buttons">
+        <button class="calc-btn" onclick="clearCalc()">C</button>
+        <button class="calc-btn" onclick="deleteCalc()">DEL</button>
+        <button class="calc-btn" onclick="appendCalc('/')">/</button>
+        <button class="calc-btn" onclick="appendCalc('*')">*</button>
+        <button class="calc-btn" onclick="appendCalc('7')">7</button>
+        <button class="calc-btn" onclick="appendCalc('8')">8</button>
+        <button class="calc-btn" onclick="appendCalc('9')">9</button>
+        <button class="calc-btn operator" onclick="appendCalc('-')">-</button>
+        <button class="calc-btn" onclick="appendCalc('4')">4</button>
+        <button class="calc-btn" onclick="appendCalc('5')">5</button>
+        <button class="calc-btn" onclick="appendCalc('6')">6</button>
+        <button class="calc-btn operator" onclick="appendCalc('+')">+</button>
+        <button class="calc-btn" onclick="appendCalc('1')">1</button>
+        <button class="calc-btn" onclick="appendCalc('2')">2</button>
+        <button class="calc-btn" onclick="appendCalc('3')">3</button>
+        <button class="calc-btn" onclick="appendCalc('0')">0</button>
+        <button class="calc-btn" onclick="appendCalc('.')">.</button>
+        <button class="calc-btn equal" onclick="calculateResult()">=</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Global Switch Mode Logic ---
+    const calendarBox = document.getElementById("calendarBox");
+    const calculatorBox = document.getElementById("calculatorBox");
+    const globalSwitchBtn = document.getElementById("globalSwitchBtn");
+
+    globalSwitchBtn.addEventListener("click", () => {
+      if (calendarBox.classList.contains("active")) {
+        // Switch to Calculator
+        calendarBox.classList.remove("active");
+        calendarBox.classList.add("minified");
+        calculatorBox.classList.remove("minified");
+        calculatorBox.classList.add("active");
+        globalSwitchBtn.textContent = "Switch to Calendar";
+      } else {
+        // Switch to Calendar
+        calculatorBox.classList.remove("active");
+        calculatorBox.classList.add("minified");
+        calendarBox.classList.remove("minified");
+        calendarBox.classList.add("active");
+        globalSwitchBtn.textContent = "Switch to Calculator";
+      }
+    });
+
+    // --- Calculator Functions ---
+    const calcScreen = document.getElementById("calcScreen");
+    let calcInput = "";
+
+    function appendCalc(val) {
+      if (calcInput === "0" && val !== ".") {
+        calcInput = val;
+      } else {
+        calcInput += val;
+      }
+      calcScreen.textContent = calcInput;
+    }
+
+    function clearCalc() {
+      calcInput = "";
+      calcScreen.textContent = "0";
+    }
+
+    function deleteCalc() {
+      calcInput = calcInput.toString().slice(0, -1);
+      calcScreen.textContent = calcInput === "" ? "0" : calcInput;
+    }
+
+    function calculateResult() {
+      try {
+        calcInput = eval(calcInput).toString();
+        calcScreen.textContent = calcInput;
+      } catch (error) {
+        calcScreen.textContent = "Error";
+        calcInput = "";
+      }
+    }
+
+    // --- Calendar JavaScript ---
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June", 
+      "July", "August", "September", "October", "November", "December"
+    ];
+
+    const monthYear = document.getElementById("monthYear");
+    const daysContainer = document.getElementById("days");
+    const prevBtn = document.getElementById("prev");
+    const nextBtn = document.getElementById("next");
+    const todayBtn = document.getElementById("todayBtn");
+    const selectedDate = document.getElementById("selectedDate");
+    const searchInput = document.getElementById("calendarSearch");
+
+    const todayForPlaceholder = new Date();
+    const pDay = String(todayForPlaceholder.getDate()).padStart(2, '0');
+    const pMonth = String(todayForPlaceholder.getMonth() + 1).padStart(2, '0');
+    const pYear = todayForPlaceholder.getFullYear();
+    if (searchInput) {
+        searchInput.placeholder = `e.g., ${pDay}/${pMonth}/${pYear}`;
+    }
+
+    let currentDate = new Date();
+
+    function renderCalendar() {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+
+        if (monthYear) {
+            monthYear.textContent = `${monthNames[month]} ${year}`;
+        }
+
+        const firstDay = new Date(year, month, 1).getDay();
+        const lastDate = new Date(year, month + 1, 0).getDate();
+
+        if (daysContainer) {
+            daysContainer.innerHTML = "";
+
+            for (let i = 0; i < firstDay; i++) {
+                const empty = document.createElement("div");
+                empty.classList.add("day", "empty");
+                daysContainer.appendChild(empty);
+            }
+
+            for (let day = 1; day <= lastDate; day++) {
+                const dayElement = document.createElement("div");
+                dayElement.classList.add("day");
+                dayElement.textContent = day;
+
+                const today = new Date();
+
+                if (
+                    day === today.getDate() &&
+                    month === today.getMonth() &&
+                    year === today.getFullYear()
+                ) {
+                    dayElement.classList.add("today");
+                }
+
+                dayElement.addEventListener("click", () => {
+                    document.querySelectorAll(".day").forEach(d => d.classList.remove("selected"));
+                    dayElement.classList.add("selected");
+                    const date = new Date(year, month, day);
+
+                    if (selectedDate) {
+                        selectedDate.textContent = date.toLocaleDateString("en-US", {
+                            weekday: "short",
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric"
+                        });
+                    }
+                });
+
+                daysContainer.appendChild(dayElement);
+            }
+        }
+    }
+
+    if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        });
+    }
+
+    if (todayBtn) {
+        todayBtn.addEventListener("click", () => {
+            currentDate = new Date();
+            renderCalendar();
+            if (selectedDate) {
+                selectedDate.textContent = "Today";
+            }
+        });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener("input", () => {
+            const searchValue = searchInput.value.trim();
+            const dateParts = searchValue.split(/[\/\-]/);
+
+            if (dateParts.length === 3) {
+                const day = parseInt(dateParts[0], 10);
+                const month = parseInt(dateParts[1], 10) - 1;
+                const year = parseInt(dateParts[2], 10);
+
+                if (!isNaN(day) && !isNaN(month) && !isNaN(year) && year > 999 && month >= 0 && month <= 11) {
+                    currentDate = new Date(year, month, 1);
+                    renderCalendar();
+
+                    document.querySelectorAll(".day:not(.empty)").forEach(dayCell => {
+                        if (parseInt(dayCell.textContent, 10) === day) {
+                            dayCell.classList.add("selected");
+                            const targetDate = new Date(year, month, day);
+                            if (selectedDate) {
+                                selectedDate.textContent = targetDate.toLocaleDateString("en-US", {
+                                    weekday: "short",
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric"
+                                });
+                            }
+                        } else {
+                            dayCell.classList.remove("selected");
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    renderCalendar();
+  </script>
+</body>
+</html>
